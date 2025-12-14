@@ -10,6 +10,7 @@ import { TokensCreator } from '../mm/TokensCreator';
 import { MmToken } from '../grammar/MmLexer';
 import { TokenReader } from '../mm/TokenReader';
 import * as path from 'path';
+import { BlockStatement } from '../mm/BlockStatement';
 
 test("Parsing two $f statements", () => {
     const parser: MmParser = new MmParser();
@@ -367,4 +368,34 @@ test('Test file inclusion', () => {
     expect(parser.diagnostics[0].provableStatementLabel).toBe('a2i');
     expect(parser.diagnostics[0].code).toBe(MmParserWarningCode.unprovenStatement);
     expect(parser.diagnostics[0].mmFilePath).toContain(path.normalize('server/src/__test__/../mmTestFiles/included2.mm'));
+});
+
+test('buildLabelToStatementMap emits newLabel event when it finds a label', () => {
+    class TestParser extends MmParser {
+        buildLabelToStatementMap(toks: TokenReader, currentBlock?: BlockStatement): void {
+            super.buildLabelToStatementMap(toks, currentBlock);
+        }
+    }
+
+    const mmParser = new TestParser();
+
+    mmParser.emit = jest.fn();
+
+    const mockTokenReader = {
+        indexForNextToken: 0,
+        tokens: {length: 1},
+        Readc: jest.fn().mockImplementation(() => {
+            if (mockTokenReader.indexForNextToken === 0) {
+                mockTokenReader.indexForNextToken = 6;
+                return {value: 'myLabel'};
+            } else {
+                return undefined;
+            }
+        }) as () => MmToken
+    } as TokenReader;
+
+    mmParser.buildLabelToStatementMap(mockTokenReader);
+
+    expect(mmParser.emit).toBeCalledTimes(1);
+    expect(mmParser.emit).toBeCalledWith('newLabel', {value: 'myLabel'});
 });
