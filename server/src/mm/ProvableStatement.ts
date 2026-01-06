@@ -94,4 +94,8 @@ export class ProvableStatement extends AssertionStatement {
     get isUnproven() {
         return this.Proof.length == 1 && this.Proof[0] == "?";
     }
+
+    get hasCompressedProof() {
+        return this.Proof.length > 1 && this.Proof[0] == "(";
+    }
 }

@@ -42,7 +42,7 @@ export class MmToMmpConverter {
 	}
 	addComment(comment: MmToken[]) {
 		const commentContent: string = rebuildOriginalStringFromTokens(comment);
-		const newComment: string = '* ' + commentContent;
+		const newComment: string = '* ' + commentContent.slice(2);
 		const newTokens: MmToken[] = splitToTokensDefault(newComment);
 		const mmpComment: MmpComment = new MmpComment(newTokens, newComment);
 		this.mmpProof.addMmpStatement(mmpComment);
@@ -211,7 +211,7 @@ export class MmToMmpConverter {
 	}
 	//#endregion addSingleStepToMmpProof
 
-	private addMmpStatementsFromDecompressedProof(provableStatement: ProvableStatement,
+	private addMmpStatementsFromMmStatementsInTheProof(provableStatement: ProvableStatement,
 		mmProof: Statement[]) {
 		this.addEHypMmpProofSteps(provableStatement);
 		mmProof.forEach((statement: Statement, i: number) => {
@@ -230,12 +230,24 @@ export class MmToMmpConverter {
 					i == mmProof.length - 1);
 		});
 	}
-	private addMmpStatements(provableStatement: ProvableStatement) {
+	getMmStatementsFromCompressedProof(provableStatement: ProvableStatement): Statement[] {
 		const proofCompressor: ProofCompressor = new ProofCompressor([]);
-		const mmProof: Statement[] = proofCompressor.DecompressProof(provableStatement,
+		const mmStatements: Statement[] = proofCompressor.DecompressProof(provableStatement,
 			this.labelToStatementMap);
-		this.addMmpStatementsFromDecompressedProof(provableStatement, mmProof);
+		return mmStatements;
 	}
+	private addMmpStatements(provableStatement: ProvableStatement) {
+		//TODO this method works for normal proofs and compressed proofs, check if it works for packed proofs, too
+		const mmStatements: Statement[] = provableStatement.hasCompressedProof
+			? this.getMmStatementsFromCompressedProof(provableStatement)
+			: Verifier.GetProofStatements(
+				provableStatement.Proof,
+				this.labelToStatementMap,
+				provableStatement.ParentBlock ?? this.outermostBlock
+			);
+		this.addMmpStatementsFromMmStatementsInTheProof(provableStatement, mmStatements);
+	}
+
 	//#endregion addMmpStatements
 
 	//#region addDisjStatements

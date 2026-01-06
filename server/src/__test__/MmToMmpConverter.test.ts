@@ -36,7 +36,7 @@ qed:5:impbii |- ch`;
 * comment before
 
 $theorem id
-* Principle of
+*    Principle of
      identity.
 1::ax-1             |- ( ph -> ( ph -> ph ) )
 2::ax-1             |- ( ph -> ( ( ph -> ph ) -> ph ) )
@@ -190,7 +190,7 @@ $getproof dfcleq`;
 * comment before
 
 $theorem dfcleq
-* Comment for dfcleq for unit test
+*      Comment for dfcleq for unit test
 1::axext3           |- ( A. x ( x e. y <-> x e. z ) -> y = z )
 qed:1:df-cleq      |- ( A = B <-> A. x ( x e. A <-> x e. B ) )
 
@@ -203,3 +203,43 @@ $d y z
 	expect(textEdit.newText).toEqual(newTextExpected);
 });
 
+test('Expect mmp proof for mp2 theorem to be inserted, even though it is written in normal mode', () => {
+	// we've decided not to remove the wrong ref
+	const mmpSource = `
+* comment before
+
+$getproof mp2
+qed:5:impbii |- ch`;
+	const mmpParserParams : IMmpParserParams = {
+		textToParse: mmpSource,
+		mmParser: impbiiMmParser,
+		workingVars: new WorkingVars(kindToPrefixMap)
+	};
+	const mmpParser: MmpParser = new MmpParser(mmpParserParams);
+	// const mmpParser: MmpParser = new MmpParser(mmpSource, impbiiMmParser, new WorkingVars(kindToPrefixMap));
+	mmpParser.parse();
+	const mmpUnifier: MmpUnifier = new MmpUnifier(
+		{
+			mmpParser: mmpParser, proofMode: ProofMode.normal,
+			maxNumberOfHypothesisDispositionsForStepDerivation: 0,
+			renumber: false,
+			removeUnusedStatements: false
+		});
+	mmpUnifier.unify();
+	const textEditArray: TextEdit[] = mmpUnifier.textEditArray;
+	expect(textEditArray.length).toBe(1);
+	const textEdit: TextEdit = textEditArray[0];
+	const newTextExpected = `
+* comment before
+
+$theorem mp2
+*      A double modus ponens inference.
+h1::mp2.0            |- ph
+h2::mp2.2           |- ps
+h3::mp2.3            |- ( ph -> ( ps -> ch ) )
+4:1,3:ax-mp         |- ( ps -> ch )
+qed:2,4:ax-mp      |- ch
+qed:5:impbii       |- ch
+`;
+	expect(textEdit.newText).toEqual(newTextExpected);
+});

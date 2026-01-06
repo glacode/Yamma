@@ -3,7 +3,7 @@ import { MmParser, MmParserErrorCode, MmParserWarningCode } from "../mm/MmParser
 import { ProvableStatement } from "../mm/ProvableStatement";
 import { LabeledStatement } from "../mm/LabeledStatement";
 import { AssertionStatement } from "../mm/AssertionStatement";
-                                                                                                                                                import { doesDiagnosticsContain, rebuildOriginalStringFromTokens } from '../mm/Utils';
+import { doesDiagnosticsContain, rebuildOriginalStringFromTokens } from '../mm/Utils';
 import { createMmParser, impbiiMmParser, opelcnMmParser, vexTheoryMmParser } from './GlobalForTest.test';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
 import { TokensCreator } from '../mm/TokensCreator';
@@ -173,10 +173,10 @@ test("expect comments to be properly assigned", () => {
     const wiCommentString = rebuildOriginalStringFromTokens(wi.comment!);
     //TODO try to understand why the following line produces a space before If, while in the last expect statement below,
     // there is no space before Rule
-    expect(wiCommentString).toEqual(' If ` ph ` and ` ps ` are wff\'s, so is ` ( ph -> ps ) `');
+    expect(wiCommentString).toEqual('   If ` ph ` and ` ps ` are wff\'s, so is ` ( ph -> ps ) `');
     const axmp: LabeledStatement = parser.labelToStatementMap.get('ax-mp')!;
     const axmpCommentString = rebuildOriginalStringFromTokens(axmp.comment!);
-    expect(axmpCommentString).toEqual('Rule of Modus Ponens. Propositional\ncalculus.');
+    expect(axmpCommentString).toEqual('   Rule of Modus Ponens. Propositional\ncalculus.');
 });
 
 test("expect mp2 ok", () => {
@@ -383,11 +383,11 @@ test('buildLabelToStatementMap emits newLabel event when it finds a label', () =
 
     const mockTokenReader = {
         indexForNextToken: 0,
-        tokens: {length: 1},
+        tokens: { length: 1 },
         Readc: jest.fn().mockImplementation(() => {
             if (mockTokenReader.indexForNextToken === 0) {
                 mockTokenReader.indexForNextToken = 6;
-                return {value: 'myLabel'};
+                return { value: 'myLabel' };
             } else {
                 return undefined;
             }
@@ -397,5 +397,5 @@ test('buildLabelToStatementMap emits newLabel event when it finds a label', () =
     mmParser.buildLabelToStatementMap(mockTokenReader);
 
     expect(mmParser.emit).toBeCalledTimes(1);
-    expect(mmParser.emit).toBeCalledWith('newLabel', {value: 'myLabel'});
+    expect(mmParser.emit).toBeCalledWith('newLabel', { value: 'myLabel' });
 });

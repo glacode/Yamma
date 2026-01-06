@@ -61,9 +61,9 @@
     mp2.0 $e |- ph $.
     mp2.2 $e |- ps $.
     mp2.3 $e |- ( ph -> ( ps -> ch ) ) $.
-    
+    $( A double modus ponens inference. $)
     mp2 $p |- ch $=
-      ( wi ax-mp ) BCEABCGDFHH $.
+      wps wch mp2.2 wph wps wch wi mp2.0 mp2.3 ax-mp ax-mp $.
   $}
   ${
     a1i.1 $e |- ph $.

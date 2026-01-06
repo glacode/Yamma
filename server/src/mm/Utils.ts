@@ -276,8 +276,7 @@ export function removeItemsFromEndOfArray(array: any[], numberOfElementsToBeRemo
 export function rebuildOriginalStringFromTokens(tokens: MmToken[]): string {
     let result = '';
     if (tokens.length > 0)
-        result = tokens[0].value.padStart(tokens[0].range.start.character, ' ');
-    // let lastPositon = 0;
+        result = ' '.repeat(tokens[0].range.start.character) + tokens[0].value;
     for (let i = 0; i < tokens.length - 1; i++) {
         const currentToken = tokens[i + 1];
         const previousToken = tokens[i];
