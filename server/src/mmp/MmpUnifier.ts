@@ -142,27 +142,30 @@ export class MmpUnifier {
 		return isProofToBeGenerated;
 	}
 	//#endregion isProofToBeGenerated
-	buildProofStatementIfProofIsComplete(uProof: MmpProof, diagnostics: Diagnostic[]) {
-		// if (uProof.lastMmpProofStep?.stepRef == 'qed' && uProof.lastMmpProofStep.isProven) {
-		if (this.isProofToBeGenerated(uProof, diagnostics)) {
-			// consoleLogWithTimestamp('buildProofStatementIfProofIsComplete begin');
-			if (this.proofMode == ProofMode.normal) {
-				const proofArray: UProofStatementStep[] = <UProofStatementStep[]>uProof.lastMmpProofStep!.proofArray(this.outermostBlock);
-				const proofStatement: UProofStatement = new UProofStatement(proofArray, this._charactersPerLine);
-				uProof.insertProofStatement(proofStatement);
-			} else if (this.proofMode == ProofMode.packed) {
-				//TODO1 28 LUG 2023 use parameters in place of 3, 80
-				const proofStatement: MmpPackedProofStatement = new MmpPackedProofStatement(uProof, 80);
-				uProof.insertProofStatement(proofStatement);
-			} else {
-				// this.proofMode == ProofMode.compressed
-				const proofStatement: IMmpStatement = this._mmpCompressedProofCreator.createMmpCompressedProof(
-					uProof, this.leftMarginForCompressedProof, this.characterPerLine);
-				// this.labelSequenceCreator);
-				uProof.insertProofStatement(proofStatement);
-			}
-			// consoleLogWithTimestamp('buildProofStatementIfProofIsComplete end');
+
+	private replaceRemainingWorkingVarsWithTheoryVars() {
+		const workingVarReplacer: WorkingVarReplacer = new WorkingVarReplacer(this.uProof!);
+		workingVarReplacer.replaceWorkingVarsWithTheoryVars(this.mmpParser.formulaToParseNodeCache);
+	}
+
+	buildProofStatement(uProof: MmpProof) {
+		// consoleLogWithTimestamp('buildProofStatementIfProofIsComplete begin');
+		if (this.proofMode == ProofMode.normal) {
+			const proofArray: UProofStatementStep[] = <UProofStatementStep[]>uProof.lastMmpProofStep!.proofArray(this.outermostBlock);
+			const proofStatement: UProofStatement = new UProofStatement(proofArray, this._charactersPerLine);
+			uProof.insertProofStatement(proofStatement);
+		} else if (this.proofMode == ProofMode.packed) {
+			//TODO1 28 LUG 2023 use parameters in place of 3, 80
+			const proofStatement: MmpPackedProofStatement = new MmpPackedProofStatement(uProof, 80);
+			uProof.insertProofStatement(proofStatement);
+		} else {
+			// this.proofMode == ProofMode.compressed
+			const proofStatement: IMmpStatement = this._mmpCompressedProofCreator.createMmpCompressedProof(
+				uProof, this.leftMarginForCompressedProof, this.characterPerLine);
+			// this.labelSequenceCreator);
+			uProof.insertProofStatement(proofStatement);
 		}
+		// consoleLogWithTimestamp('buildProofStatementIfProofIsComplete end');
 	}
 	//#endregion buildProofStatementIfProofIsComplete
 
@@ -188,10 +191,9 @@ export class MmpUnifier {
 			});
 		uProofTransformer.transformUProof();
 		if (this.isProofToBeGenerated(this.uProof!, this.mmpParser.diagnostics)) {
-			const workingVarReplacer: WorkingVarReplacer = new WorkingVarReplacer(this.uProof!);
-			workingVarReplacer.replaceWorkingVarsWithTheoryVars(this.mmpParser.formulaToParseNodeCache);
+			this.replaceRemainingWorkingVarsWithTheoryVars();
+			this.buildProofStatement(this.uProof!);
 		}
-		this.buildProofStatementIfProofIsComplete(this.uProof!, this.mmpParser.diagnostics);
 		this.textEditArray = this.buildTextEditArray(uProofTransformer.uProof);
 	}
 	//#endregion unify
