@@ -13,6 +13,7 @@ import { doesDiagnosticsContain } from '../mm/Utils';
 import { MmpPackedProofStatement } from './proofCompression/MmpPackedProofStatement';
 import { IMmpCompressedProofCreator, MmpCompressedProofCreatorFromPackedProof } from './proofCompression/MmpCompressedProofCreator';
 import { MmpSortedByReferenceWithKnapsackLabelMapCreator } from './proofCompression/MmpSortedByReferenceWithKnapsackLabelMapCreator';
+import { WorkingVarReplacer } from './WorkingVarReplacer';
 
 export interface MmpUnifierArgs {
 	mmpParser: MmpParser;
@@ -186,6 +187,10 @@ export class MmpUnifier {
 				expectedTheoremLabel: this.expectedTheoremLabel
 			});
 		uProofTransformer.transformUProof();
+		if (this.isProofToBeGenerated(this.uProof!, this.mmpParser.diagnostics)) {
+			const workingVarReplacer: WorkingVarReplacer = new WorkingVarReplacer(this.uProof!);
+			workingVarReplacer.replaceWorkingVarsWithTheoryVars(this.mmpParser.formulaToParseNodeCache);
+		}
 		this.buildProofStatementIfProofIsComplete(this.uProof!, this.mmpParser.diagnostics);
 		this.textEditArray = this.buildTextEditArray(uProofTransformer.uProof);
 	}

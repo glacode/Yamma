@@ -1218,7 +1218,7 @@ $d w z
 	expect(textEdit.newText).toEqual(newTextExpected);
 });
 
-test.skip('[Issue #23] Replace working variables when proof is complete', () => {
+test('[Issue #23] Replace working variables when proof is complete', () => {
 	const mmpSource = `
 * test comment
 
@@ -1252,6 +1252,9 @@ qed:1,2:mpd        |- ( ph -> ph )`;
 1::ax-1             |- ( ph -> ( ps -> ph ) )
 2::ax-1             |- ( ph -> ( ( ps -> ph ) -> ph ) )
 qed:1,2:mpd        |- ( ph -> ph )
+
+$=    wph wps wph wi wph wph wps ax-1 wph wps wph wi ax-1 mpd $.
+
 `;
 	const textEdit: TextEdit = textEditArray[0];
 	expect(textEdit.newText).toEqual(newTextExpected);
