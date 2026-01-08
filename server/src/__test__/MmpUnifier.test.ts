@@ -1259,3 +1259,45 @@ $=    wph wps wph wi wph wph wps ax-1 wph wps wph wi ax-1 mpd $.
 	const textEdit: TextEdit = textEditArray[0];
 	expect(textEdit.newText).toEqual(newTextExpected);
 });
+
+test('[Issue #23] Replace two working variables when proof is complete', () => {
+	const mmpSource = `
+* test comment
+
+1::ax-1             |- ( &W2 -> ( &W1 -> &W2 ) )
+2::ax-1             |- ( &W2 -> ( ( &W1 -> &W2 ) -> &W2 ) )
+qed:1,2:mpd        |- ( &W2 -> &W2 )`;
+	// const parser: MmParser = new MmParser();
+	// parser.ParseText(axmpTheory);
+	const mmpParserParams: IMmpParserParams = {
+		textToParse: mmpSource,
+		mmParser: opelcnMmParser,
+		workingVars: new WorkingVars(kindToPrefixMap)
+	};
+	const mmpParser: MmpParser = new MmpParser(mmpParserParams);
+	// const mmpParser: MmpParser = new MmpParser(mmpSource, mp2MmParser, new WorkingVars(kindToPrefixMap));
+	mmpParser.parse();
+	const mmpUnifier: MmpUnifier = new MmpUnifier(
+		{
+			mmpParser: mmpParser,
+			proofMode: ProofMode.normal,
+			maxNumberOfHypothesisDispositionsForStepDerivation: 0,
+			renumber: false,
+			removeUnusedStatements: false
+		});
+	mmpUnifier.unify();
+	const textEditArray: TextEdit[] = mmpUnifier.textEditArray;
+	expect(textEditArray.length).toBe(1);
+	const newTextExpected = `
+* test comment
+
+1::ax-1             |- ( ph -> ( ps -> ph ) )
+2::ax-1             |- ( ph -> ( ( ps -> ph ) -> ph ) )
+qed:1,2:mpd        |- ( ph -> ph )
+
+$=    wph wps wph wi wph wph wps ax-1 wph wps wph wi ax-1 mpd $.
+
+`;
+	const textEdit: TextEdit = textEditArray[0];
+	expect(textEdit.newText).toEqual(newTextExpected);
+});
