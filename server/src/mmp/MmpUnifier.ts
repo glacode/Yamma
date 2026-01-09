@@ -13,7 +13,7 @@ import { doesDiagnosticsContain } from '../mm/Utils';
 import { MmpPackedProofStatement } from './proofCompression/MmpPackedProofStatement';
 import { IMmpCompressedProofCreator, MmpCompressedProofCreatorFromPackedProof } from './proofCompression/MmpCompressedProofCreator';
 import { MmpSortedByReferenceWithKnapsackLabelMapCreator } from './proofCompression/MmpSortedByReferenceWithKnapsackLabelMapCreator';
-import { WorkingVarReplacerForCompleteProof } from './WorkingVarReplacer';
+import { WorkingVarReplacerForCompleteProof } from './WorkingVarReplacerForCompleteProof';
 
 export interface MmpUnifierArgs {
 	mmpParser: MmpParser;
