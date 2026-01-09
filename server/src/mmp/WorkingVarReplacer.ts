@@ -12,7 +12,7 @@ import { FormulaToParseNodeCache } from './FormulaToParseNodeCache';
  * with unused variables of the same kind from the theory.
  * This is needed when the proof is complete, but still contains working variables.
  */
-export class WorkingVarReplacer {
+export class WorkingVarReplacerForCompleteProof {
 	constructor(private uProof: MmpProof) {
 	}
 
