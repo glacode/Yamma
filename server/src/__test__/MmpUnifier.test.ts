@@ -1,4 +1,5 @@
 import { TextEdit } from 'vscode-languageserver-textdocument';
+import { GlobalState } from '../general/GlobalState';
 import { ProofMode, DisjVarAutomaticGeneration } from '../mm/ConfigurationManager';
 import { MmParser } from '../mm/MmParser';
 import { IMmpParserParams, MmpParser } from '../mmp/MmpParser';
@@ -1235,13 +1236,15 @@ qed:1,2:mpd        |- ( ph -> ph )`;
 	const mmpParser: MmpParser = new MmpParser(mmpParserParams);
 	// const mmpParser: MmpParser = new MmpParser(mmpSource, mp2MmParser, new WorkingVars(kindToPrefixMap));
 	mmpParser.parse();
+	const globalState: GlobalState = new GlobalState();
 	const mmpUnifier: MmpUnifier = new MmpUnifier(
 		{
 			mmpParser: mmpParser,
 			proofMode: ProofMode.normal,
 			maxNumberOfHypothesisDispositionsForStepDerivation: 0,
 			renumber: false,
-			removeUnusedStatements: false
+			removeUnusedStatements: false,
+			globalState: globalState
 		});
 	mmpUnifier.unify();
 	const textEditArray: TextEdit[] = mmpUnifier.textEditArray;
@@ -1258,6 +1261,7 @@ $=    wph wps wph wi wph wph wps ax-1 wph wps wph wi ax-1 mpd $.
 `;
 	const textEdit: TextEdit = textEditArray[0];
 	expect(textEdit.newText).toEqual(newTextExpected);
+	expect(globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars).toBeFalsy();
 });
 
 test('[Issue #23] Replace two working variables when proof is complete', () => {

@@ -14,6 +14,7 @@ import { MmpPackedProofStatement } from './proofCompression/MmpPackedProofStatem
 import { IMmpCompressedProofCreator, MmpCompressedProofCreatorFromPackedProof } from './proofCompression/MmpCompressedProofCreator';
 import { MmpSortedByReferenceWithKnapsackLabelMapCreator } from './proofCompression/MmpSortedByReferenceWithKnapsackLabelMapCreator';
 import { WorkingVarReplacerForCompleteProof } from './WorkingVarReplacerForCompleteProof';
+import { GlobalState } from '../general/GlobalState';
 
 export interface MmpUnifierArgs {
 	mmpParser: MmpParser;
@@ -25,6 +26,7 @@ export interface MmpUnifierArgs {
 	leftMarginForCompressedProof?: number;
 	characterPerLine?: number;
 	mmpCompressedProofCreator?: IMmpCompressedProofCreator;
+	globalState?: GlobalState;
 }
 
 // Parser for .mmp files
@@ -57,6 +59,7 @@ export class MmpUnifier {
 
 	private _charactersPerLine: number;
 	private _mmpCompressedProofCreator: IMmpCompressedProofCreator;
+	private globalState?: GlobalState;
 
 
 	//#region constructor
@@ -79,6 +82,7 @@ export class MmpUnifier {
 		this.expectedTheoremLabel = args.expectedTheoremLabel;
 		this.leftMarginForCompressedProof = args.leftMarginForCompressedProof;
 		this.characterPerLine = args.characterPerLine;
+		this.globalState = args.globalState;
 
 		this._charactersPerLine = args.characterPerLine == undefined ? Parameters.charactersPerLine : args.characterPerLine;
 		this._mmpCompressedProofCreator = args.mmpCompressedProofCreator != undefined ? args.mmpCompressedProofCreator :
@@ -144,8 +148,14 @@ export class MmpUnifier {
 	//#endregion isProofToBeGenerated
 
 	private replaceRemainingWorkingVarsWithTheoryVars() {
-		const workingVarReplacerForCompleteProof: WorkingVarReplacerForCompleteProof = new WorkingVarReplacerForCompleteProof(this.uProof!);
-		workingVarReplacerForCompleteProof.replaceWorkingVarsWithTheoryVars(this.mmpParser.formulaToParseNodeCache);
+		const workingVarReplacerForCompleteProof: WorkingVarReplacerForCompleteProof =
+			new WorkingVarReplacerForCompleteProof(this.uProof!);
+		const diagnostics: Diagnostic[] = [];
+		workingVarReplacerForCompleteProof.replaceWorkingVarsWithTheoryVars(
+			this.mmpParser.formulaToParseNodeCache, diagnostics);
+		if (diagnostics.length > 0)
+			if (this.globalState != undefined)
+				this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = true;
 	}
 
 	buildProofStatement(uProof: MmpProof) {
@@ -190,9 +200,12 @@ export class MmpUnifier {
 				expectedTheoremLabel: this.expectedTheoremLabel
 			});
 		uProofTransformer.transformUProof();
+		if (this.globalState)
+			this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = false;
 		if (this.isProofToBeGenerated(this.uProof!, this.mmpParser.diagnostics)) {
 			this.replaceRemainingWorkingVarsWithTheoryVars();
-			this.buildProofStatement(this.uProof!);
+			if (!this.globalState?.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars)
+				this.buildProofStatement(this.uProof!);
 		}
 		this.textEditArray = this.buildTextEditArray(uProofTransformer.uProof);
 	}

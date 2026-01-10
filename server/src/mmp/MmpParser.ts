@@ -83,7 +83,8 @@ export enum MmpParserWarningCode {
 	missingTheoremLabel = "missingTheoremLabel",
 	lastStatementShouldBeQed = "lastStatementShouldBeQED",
 	missingComment = "missingComment",
-	isDiscouraged = "isDiscouraged"
+	isDiscouraged = "isDiscouraged",
+	proofCompleteButWorkingVarsRemainAndNoUnusedTheoryVars = "proofCompleteButWorkingVarsRemainAndNoUnusedTheoryVars"
 }
 
 

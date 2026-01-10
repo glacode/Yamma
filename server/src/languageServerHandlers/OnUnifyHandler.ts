@@ -33,16 +33,18 @@ export class OnUnifyHandler {
 	mmParser: MmParser;
 	configurationManager: ConfigurationManager;
 	maxNumberOfHypothesisDispositionsForStepDerivation: number;
+	globalState: GlobalState;
 
 	// constructor(params: DocumentFormattingParams, mmParser: MmParser,
 	constructor(private textDocumentUri: string, mmParser: MmParser, private mmpParser: MmpParser,
 		configurationManager: ConfigurationManager, maxNumberOfHypothesisDispositionsForStepDerivation: number,
-		private renumber: boolean, private removeUnusedStatements: boolean) {
+		private renumber: boolean, private removeUnusedStatements: boolean, globalState: GlobalState) {
 		// this.params = params;
 		// this.documents = documents;
 		this.mmParser = mmParser;
 		this.configurationManager = configurationManager;
 		this.maxNumberOfHypothesisDispositionsForStepDerivation = maxNumberOfHypothesisDispositionsForStepDerivation;
+		this.globalState = globalState;
 	}
 
 	//#region unifyIfTheCase
@@ -84,7 +86,8 @@ export class OnUnifyHandler {
 					renumber: this.renumber,
 					removeUnusedStatements: this.removeUnusedStatements,
 					expectedTheoremLabel: expectedTheoremLabel,
-					mmpCompressedProofCreator: mmpCompressedProofCreator
+					mmpCompressedProofCreator: mmpCompressedProofCreator,
+					globalState: this.globalState
 				});
 		// const textToParse: string = textDocument.getText();
 		if (this.mmParser.grammar != undefined)
@@ -128,7 +131,8 @@ export class OnUnifyHandler {
 						unifyAndValidateArgs.globalState.configurationManager,
 						unifyAndValidateArgs.maxNumberOfHypothesisDispositionsForStepDerivation,
 						unifyAndValidateArgs.renumber,
-						unifyAndValidateArgs.removeUnusedStatements);
+						unifyAndValidateArgs.removeUnusedStatements,
+						unifyAndValidateArgs.globalState);
 				const textEditArray: TextEdit[] = await onDocumentFormattingHandler.unify();
 				const unificationResult: IUnificationResult = {
 					mmpParser: mmpParser,

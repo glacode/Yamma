@@ -10,6 +10,7 @@ import { consoleLogWithTimestamp } from '../mm/Utils';
 import { FormulaToParseNodeCache } from './FormulaToParseNodeCache';
 import { IDiagnosticMessageForSyntaxError, ShortDiagnosticMessageForSyntaxError, VerboseDiagnosticMessageForSyntaxError } from './DiagnosticMessageForSyntaxError';
 import DiagnosticMessageForSyntaxError, { DisjVarAutomaticGeneration } from '../mm/ConfigurationManager';
+import { WorkingVarReplacerForCompleteProof } from './WorkingVarReplacerForCompleteProof';
 
 /** validates a .mmp files and returns diagnostics
  * for the language server event handlers
@@ -73,6 +74,13 @@ export class MmpValidator {
 		console.log('after mmpParser.parse()');
 		this.globalState.lastMmpParser = this.mmpParser;
 		this.diagnostics = this.mmpParser.diagnostics;
+
+		if (this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars) {
+			const workingVarReplacerForCompleteProof: WorkingVarReplacerForCompleteProof =
+				new WorkingVarReplacerForCompleteProof(this.mmpParser.mmpProof!);
+			workingVarReplacerForCompleteProof.addDiagnosticsForMissingUnusedVars(this.diagnostics);
+		}
+
 		this.updateStatistics(this.mmpParser);
 	}
 	//#endregionvalidateFullDocumentText
