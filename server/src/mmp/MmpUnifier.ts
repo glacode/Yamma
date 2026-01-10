@@ -61,6 +61,8 @@ export class MmpUnifier {
 	private _mmpCompressedProofCreator: IMmpCompressedProofCreator;
 	private globalState?: GlobalState;
 
+	private isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = false;
+
 
 	//#region constructor
 	// constructor(mmpParser: MmpParser, proofMode: ProofMode,
@@ -126,8 +128,6 @@ export class MmpUnifier {
 		return textEdits;
 	}
 
-	//#region buildProofStatementIfProofIsComplete
-
 	//#region isProofToBeGenerated
 	private isDiscouragedNotAProblem(
 		// mmpProof: MmpProof,
@@ -153,9 +153,11 @@ export class MmpUnifier {
 		const diagnostics: Diagnostic[] = [];
 		workingVarReplacerForCompleteProof.replaceWorkingVarsWithTheoryVars(
 			this.mmpParser.formulaToParseNodeCache, diagnostics);
-		if (diagnostics.length > 0)
+		if (diagnostics.length > 0) {
+			this.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = true;
 			if (this.globalState != undefined)
 				this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = true;
+		}
 	}
 
 	buildProofStatement(uProof: MmpProof) {
@@ -177,7 +179,17 @@ export class MmpUnifier {
 		}
 		// consoleLogWithTimestamp('buildProofStatementIfProofIsComplete end');
 	}
-	//#endregion buildProofStatementIfProofIsComplete
+
+	private ifProofCompleteReplaceRemainingWoringVarsAndBuildProofStatement() {
+		if (this.globalState)
+			this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = false;
+		if (this.isProofToBeGenerated(this.uProof!, this.mmpParser.diagnostics)) {
+			this.replaceRemainingWorkingVarsWithTheoryVars();
+			if (!this.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars)
+				// either there were no working vars or they have been all replaced with theory vars
+				this.buildProofStatement(this.uProof!);
+		}
+	}
 
 	/**
 	 * Unifies textToParse and builds a UProof and a single TextEdit to replace the whole
@@ -200,13 +212,7 @@ export class MmpUnifier {
 				expectedTheoremLabel: this.expectedTheoremLabel
 			});
 		uProofTransformer.transformUProof();
-		if (this.globalState)
-			this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars = false;
-		if (this.isProofToBeGenerated(this.uProof!, this.mmpParser.diagnostics)) {
-			this.replaceRemainingWorkingVarsWithTheoryVars();
-			if (!this.globalState?.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars)
-				this.buildProofStatement(this.uProof!);
-		}
+		this.ifProofCompleteReplaceRemainingWoringVarsAndBuildProofStatement();
 		this.textEditArray = this.buildTextEditArray(uProofTransformer.uProof);
 	}
 	//#endregion unify
