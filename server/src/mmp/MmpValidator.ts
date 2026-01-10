@@ -11,6 +11,7 @@ import { FormulaToParseNodeCache } from './FormulaToParseNodeCache';
 import { IDiagnosticMessageForSyntaxError, ShortDiagnosticMessageForSyntaxError, VerboseDiagnosticMessageForSyntaxError } from './DiagnosticMessageForSyntaxError';
 import DiagnosticMessageForSyntaxError, { DisjVarAutomaticGeneration } from '../mm/ConfigurationManager';
 import { WorkingVarReplacerForCompleteProof } from './WorkingVarReplacerForCompleteProof';
+import { MmpProof } from './MmpProof';
 
 /** validates a .mmp files and returns diagnostics
  * for the language server event handlers
@@ -48,8 +49,13 @@ export class MmpValidator {
 		this.globalState.mmpStatistics = mmpStatistics;
 	}
 
-	// validateFullDocumentText(textToValidate: string, labelToStatementMap: Map<string, LabeledStatement>,
-	// 	outermostBlock: BlockStatement, grammar: Grammar, workingVars: WorkingVars) {
+	private addDiagnosticsForProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars(mmpProof: MmpProof) {
+		if (this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars) {
+			const workingVarReplacerForCompleteProof: WorkingVarReplacerForCompleteProof = new WorkingVarReplacerForCompleteProof(mmpProof);
+			workingVarReplacerForCompleteProof.addDiagnosticsForMissingUnusedVars(this.diagnostics);
+		}
+	}
+
 	validateFullDocumentText(textToValidate: string, textDocumentUri: string,
 		mmParser: MmParser, workingVars: WorkingVars) {
 		// const mmpParser: MmpParser = new MmpParser(textToValidate, mmParser, workingVars,
@@ -75,11 +81,7 @@ export class MmpValidator {
 		this.globalState.lastMmpParser = this.mmpParser;
 		this.diagnostics = this.mmpParser.diagnostics;
 
-		if (this.globalState.isProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars) {
-			const workingVarReplacerForCompleteProof: WorkingVarReplacerForCompleteProof =
-				new WorkingVarReplacerForCompleteProof(this.mmpParser.mmpProof!);
-			workingVarReplacerForCompleteProof.addDiagnosticsForMissingUnusedVars(this.diagnostics);
-		}
+		this.addDiagnosticsForProofCompleteAndItContainsWorkingVarsAndThereAreNoUnusedTheoryVars(this.mmpParser.mmpProof!);
 
 		this.updateStatistics(this.mmpParser);
 	}
