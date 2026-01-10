@@ -144,14 +144,18 @@ qed:6,4:ax-mp      |- &W2
 		const diagnostics: Diagnostic[] = params.diagnostics;
 		expect(diagnostics.length).toBe(2);
 		expect(diagnostics[0].code).toBe(MmpParserWarningCode.proofCompleteButWorkingVarsRemainAndNoUnusedTheoryVars);
-		expect(diagnostics[0].message).toBe('No unused variable of kind wff found in the theory');
+		expect(diagnostics[0].message).toBe(`\
+The proof is complete, but it contains working variables and there are no unused theory variables of kind 'wff' to replace them.
+Please replace this working variable manually.`);
 		expect(diagnostics[0].severity).toBe(DiagnosticSeverity.Warning);
 		expect(diagnostics[0].range.start.line).toBe(7);
 		expect(diagnostics[0].range.start.character).toBe(32);
 		expect(diagnostics[0].range.end.line).toBe(7);
 		expect(diagnostics[0].range.end.character).toBe(35);
 		expect(diagnostics[1].code).toBe(MmpParserWarningCode.proofCompleteButWorkingVarsRemainAndNoUnusedTheoryVars);
-		expect(diagnostics[1].message).toBe('No unused variable of kind wff found in the theory');
+		expect(diagnostics[1].message).toBe(`\
+The proof is complete, but it contains working variables and there are no unused theory variables of kind 'wff' to replace them.
+Please replace this working variable manually.`);
 		expect(diagnostics[1].severity).toBe(DiagnosticSeverity.Warning);
 		expect(diagnostics[1].range.start.line).toBe(10);
 		expect(diagnostics[1].range.start.character).toBe(22);

@@ -116,7 +116,9 @@ export class WorkingVarReplacerForCompleteProof {
 				if (diagnostics != undefined) {
 					internalNodes.forEach((internalNode: InternalNode) => {
 						const mmToken: MmToken = GrammarManager.getTokenFromInternalNode(internalNode);
-						const message = `No unused variable of kind ${kind} found in the theory`;
+						const message = `\
+The proof is complete, but it contains working variables and there are no unused theory variables of kind '${kind}' to replace them.
+Please replace this working variable manually.`;
 						MmpValidator.addDiagnosticWarning(
 							message,
 							mmToken.range,
